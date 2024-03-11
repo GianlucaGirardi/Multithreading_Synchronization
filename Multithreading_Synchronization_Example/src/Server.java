@@ -331,7 +331,14 @@ public class Server extends Thread {
               
          return true;
      }
-         
+
+
+    /* The account object is a shared ressource between the two threads
+     * The critical region consists of the reference of the current Account object in memory
+     * Therefore, there is a need to disallow the two threads from accessing the same account object concurrently:
+     *The critical region (account[i]) in the methods deposit(), withdraw() & query() need to be protected properly using synchornized statements. 
+      */
+    
     /** 
      * Processing of a deposit operation in an account
      * 
@@ -339,10 +346,12 @@ public class Server extends Thread {
      * @param i, amount
      */
    
-     public double deposit(int i, double amount)
+     public synchronized double deposit(int i, double amount)
      {  double curBalance;      /* Current account balance */
        
-     		curBalance = account[i].getBalance( );          /* Get current account balance */
+        /* Synchronize on the account object to prevent concurrent access by multiple threads */
+     	synchronized(account[i]){
+            curBalance = account[i].getBalance( );          /* Get current account balance */
         
      		/* NEW : A server thread is blocked before updating the 10th , 20th, ... 70th account balance in order to simulate an inconsistency situation */
      		if (((i + 1) % 10 ) == 0)
@@ -359,6 +368,7 @@ public class Server extends Thread {
         
      		account[i].setBalance(curBalance + amount);     /* Deposit amount in the account */
      		return account[i].getBalance ();                /* Return updated account balance */
+        }
      }
          
     /**
@@ -371,12 +381,15 @@ public class Server extends Thread {
      public double withdraw(int i, double amount)
      {  double curBalance;      /* Current account balance */
         
-     	curBalance = account[i].getBalance( );          /* Get current account balance */
+        /* Synchronize on the account object to prevent concurrent access by multiple threads */
+     	synchronized(account[i]){ 
+            curBalance = account[i].getBalance( );          /* Get current account balance */
           
         System.out.println("\n DEBUG : Server.withdraw - " + "i " + i + " Current balance " + curBalance + " Amount " + amount + " " + getServerThreadId());
         
         account[i].setBalance(curBalance - amount);     /* Withdraw amount in the account */
         return account[i].getBalance ();                /* Return updated account balance */
+        }
      	
      }
 
@@ -390,11 +403,15 @@ public class Server extends Thread {
      public double query(int i)
      {  double curBalance;      /* Current account balance */
         
-     	curBalance = account[i].getBalance( );          /* Get current account balance */
+        /* Synchronize on the account object to prevent concurrent access by multiple threads */
+        synchronized(account[i]){
+            curBalance = account[i].getBalance( );          /* Get current account balance */
         
-        System.out.println("\n DEBUG : Server.query - " + "i " + i + " Current balance " + curBalance + " " + getServerThreadId()); 
-        
-        return curBalance;                              /* Return current account balance */
+            System.out.println("\n DEBUG : Server.query - " + "i " + i + " Current balance " + curBalance + " " + getServerThreadId()); 
+            
+            return curBalance;                              /* Return current account balance */
+        }
+     	
      }
          
      /**
