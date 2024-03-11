@@ -28,6 +28,11 @@ public class Driver {
         
       /*..............................................................................................................................................................*/
        
+      Server objServer1 = new Server("thread1");
+      objServer1.start();
+      Server objServer2 = new Server("thread2");
+      objServer2.start();
+
     }
     
  }

@@ -157,10 +157,10 @@ public class Client extends Thread {
          while (i < getNumberOfTransactions())
          {  
 	
-        //	 while (Network.getInBufferStatus().equals("full"))
-        //	{ 
-        // 	  Thread.yield(); 	/* Yield the cpu if the network input buffer is full */
-        //  }
+        	 while (Network.getInBufferStatus().equals("full"))
+        	{ 
+         	  Thread.yield(); 	/* Yield the cpu if the network input buffer is full */
+            }
                                               	
             transaction[i].setTransactionStatus("sent");   /* Set current transaction status */
            
@@ -184,11 +184,11 @@ public class Client extends Thread {
          
          while (i < getNumberOfTransactions())
          {   
-        	// while (Network.getOutBufferStatus().equals("empty")) 
-        	// { 
-        	//	 Thread.yield(); 	/* Yield the cpu if the network output buffer is full */
+        	 while (Network.getOutBufferStatus().equals("empty")) 
+        	 { 
+        		 Thread.yield(); 	/* Yield the cpu if the network output buffer is full */
         		 
-        	// }
+        	 }
                                                                             	
             Network.receive(transact);                               	/* Receive updated transaction from the network buffer */
             
@@ -219,11 +219,25 @@ public class Client extends Thread {
     public void run()
     {   
     	Transactions transact = new Transactions();
-    	long sendClientStartTime, sendClientEndTime, receiveClientStartTime = 0, receiveClientEndTime = 0;
+    	long sendClientStartTime, sendClientEndTime, receiveClientStartTime, receiveClientEndTime;
      
          /*................................................................................................................................................................................................................*/
-              
-                System.out.println("\n Terminating client receiving thread - " + " Running time " +  (receiveClientEndTime - receiveClientStartTime));
+                /* Thread execution depends on the Operation attribute of the Client Object */
+
+                if(this.getClientOperation().equals("sending")){
+                    sendClientStartTime = System.currentTimeMillis();
+                    this.sendTransactions();
+                    sendClientEndTime = System.currentTimeMillis();
+                    System.out.println("\n Terminating client sending thread - " + " Running time " +  (sendClientEndTime - sendClientStartTime));
+                }
+                else{
+                    receiveClientStartTime = System.currentTimeMillis();
+                    this.receiveTransactions(transact);
+                    Network.setClientConnectionStatus("disconnected");
+                    receiveClientEndTime = System.currentTimeMillis();
+                    System.out.println("\n Terminating client receiving thread - " + " Running time " +  (receiveClientEndTime - receiveClientStartTime));
+                }
+                
             }
                 
     }

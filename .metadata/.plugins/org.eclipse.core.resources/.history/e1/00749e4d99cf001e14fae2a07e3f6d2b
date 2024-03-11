@@ -1,0 +1,23 @@
+package practice;
+
+public class driver {
+
+	public static void main(String[] args) {
+		int x;
+		try {
+			 x = 5/0;
+		}
+		catch(Exception e){
+			System.out.println("Catch block executed");
+		}
+		finally {
+			System.out.println("Finally block executed");
+			 x = 100;
+			return;
+		}
+		
+		System.out.println(x);
+
+	}
+
+}

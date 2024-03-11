@@ -1,0 +1,11 @@
+package practice;
+
+public class A {
+	private int memb1;
+	private int memb2;
+	
+	
+	public int getMemb1() {
+		return this.memb1;
+	}
+}
