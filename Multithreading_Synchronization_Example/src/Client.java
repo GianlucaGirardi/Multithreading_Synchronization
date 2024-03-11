@@ -1,4 +1,5 @@
-package comp346_A_2;
+
+
 import java.util.Scanner;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -226,4 +227,4 @@ public class Client extends Thread {
             }
                 
     }
-// got rid of an extra curly braces }
+

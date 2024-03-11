@@ -1,4 +1,4 @@
-package comp346_A_2;
+
 import java.util.Scanner;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -416,20 +416,18 @@ public class Server extends Thread {
       
     public void run()
     {   Transactions trans = new Transactions();
-    	 long serverStartTime, serverEndTime;
+    	 long serverStartTime=0, serverEndTime =0;
     
 	/* System.out.println("\n DEBUG : Server.run() - starting server thread " + getServerThreadId() + " " + Network.getServerConnectionStatus()); */
     	
-	Transactions trans = new Transactions();
-    	long serverStartTime, serverEndTime;
+	/*Transactions trans = new Transactions();
+    	long serverStartTime, serverEndTime;*/
     
 	/* System.out.println("\n DEBUG : Server.run() - starting server thread " + objNetwork.getServerConnectionStatus()); */
     	
     	/* .....................................................................................................................................................................................................*/
         
-        System.out.println("\n Terminating server thread - " + " Running time " + (serverEndTime1 - serverStartTime1) + " milliseconds");
+        System.out.println("\n Terminating server thread - " + " Running time " + (serverEndTime - serverStartTime) + " milliseconds");
 	
     }
 }
-
-
