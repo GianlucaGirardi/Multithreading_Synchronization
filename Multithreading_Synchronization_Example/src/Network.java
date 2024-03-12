@@ -26,12 +26,12 @@ public class Network extends Thread {
     private static String inBufferStatus, outBufferStatus;     /* Current status of the network buffers - normal, full, empty */
     private static String networkStatus;                       /* Network status - active, inactive */
     
-    private static Semaphore Mutex1 = new Semaphore(1);
-    private static Semaphore Mutex2 = new Semaphore(1);
-    private static Semaphore Empty1 = new Semaphore(10);
-    private static Semaphore Empty2 = new Semaphore(10);
-    private static Semaphore Full1 = new Semaphore(0);
-    private static Semaphore Full2 = new Semaphore(0);
+    private static Semaphore Mutex1;
+    private static Semaphore Mutex2;
+    private static Semaphore Empty1;
+    private static Semaphore Empty2;
+    private static Semaphore Full1;
+    private static Semaphore Full2;
     /** 
      * Constructor of the Network class
      * 
@@ -63,6 +63,13 @@ public class Network extends Thread {
          outputIndexClient = 0;
                 
          networkStatus = "active";
+
+        Mutex1 = new Semaphore(1);
+        Mutex2 = new Semaphore(1);
+        Empty1 = new Semaphore(Network.getMaxNbPackets());
+        Empty2 = new Semaphore(Network.getMaxNbPackets());
+        Full1 = new Semaphore(0);
+        Full2 = new Semaphore(0);
       }     
         
      /** 
@@ -350,6 +357,8 @@ public class Network extends Thread {
      { 
          maxNbPackets = maxPackets;
      }
+
+     
          
     /**
      *  Transmitting the transactions from the client to the server through the network 
@@ -360,11 +369,12 @@ public class Network extends Thread {
      */
         public static boolean send(Transactions inPacket)
         {
-                  /* Wait if buffer if full, else enter and decrement Empty by one to bring it close to empty state
+                  /* Wait if inComingPacket if full, else enter and decrement Empty by one to bring it close to empty state
                    * Grab mutex to block to prevent other threads (transferIn()) from enter the crtitical section
                    * After the critical section, return mutex
                    * Increment Full by 1 to bring it closer to full state.
                    */
+                  
                   try{
                     Empty1.acquire(); // Wait until empty > 0
                     Mutex1.acquire(); // Take lock if available
@@ -381,7 +391,7 @@ public class Network extends Thread {
         		  inComingPacket[inputIndexClient].setTransactionStatus("transferred");
             
         		 /* System.out.println("\n DEBUG : Network.send() - index inputIndexClient " + inputIndexClient); */
-        		  /* System.out.println("\n DEBUG : Network.send() - account number " + inComingPacket[inputIndexClient].getAccountNumber()); */
+        		 /* System.out.println("\n DEBUG : Network.send() - account number " + inComingPacket[inputIndexClient].getAccountNumber()); */
             
         		  setinputIndexClient(((getinputIndexClient( ) + 1) % getMaxNbPackets ()));	/* Increment the input buffer index  for the client */
         		  /* Check if input buffer is full */
@@ -408,7 +418,13 @@ public class Network extends Thread {
      * 
      */
          public static boolean receive(Transactions outPacket)
-        {
+        {   
+            /* Wait if the Packet is empty, else bring it closer by 1 to its full state 
+            * Take Mutex to block two threads from accessing the same index while its being placed
+            * Release Mutex after the critical section
+            * Increment empty to make it closer by 1 to its empty state
+            */
+
             try{
                 Full2.acquire(); // Wait until full > 0
                 Mutex2.acquire(); // Take lock if available
@@ -453,7 +469,13 @@ public class Network extends Thread {
      * 
      */
          public static boolean transferOut(Transactions outPacket)
-        {
+        {   
+            /* Wait if inComingPacket if full, else enter and decrement Empty by one to bring it close to empty state
+            * Grab mutex to block to prevent other threads (transferIn()) from enter the crtitical section
+            * After the critical section, return mutex
+            * Increment Full by 1 to bring it closer to full state.
+            */
+
             try{
                 Empty2.acquire(); // Wait until empty > 0
                 Mutex2.acquire(); // Take lock if available
@@ -498,18 +520,18 @@ public class Network extends Thread {
      */
        public static boolean transferIn(Transactions inPacket)
         {
-                 /* Wait if the buffer is empty, else bring it closer by 1 to its full state 
-                  * Take Mutex to block two threads from accessing the same index while its being placed
-                  * Release Mutex after the critical section
-                  * Increment empty to make it closer by 1 to its empty state
-                 */
+                /* Wait if the IncomingPacket is empty, else bring it closer by 1 to its full state 
+                * Take Mutex to block two threads from accessing the same index while its being placed
+                * Release Mutex after the critical section
+                * Increment empty to make it closer by 1 to its empty state
+                */
                 try{
                     Full1.acquire(); // Wait until full > 0
                     Mutex1.acquire(); // Take lock if available
-                  }
-                  catch(Exception e){
+                }
+                catch(Exception e){
                     e.printStackTrace();
-                  }
+                }
     		     inPacket.setAccountNumber(inComingPacket[outputIndexServer].getAccountNumber());
     		     inPacket.setOperationType(inComingPacket[outputIndexServer].getOperationType());
     		     inPacket.setTransactionAmount(inComingPacket[outputIndexServer].getTransactionAmount());
@@ -611,18 +633,16 @@ public class Network extends Thread {
     {	
     	/* System.out.println("\n DEBUG : Network.run() - starting network thread"); */
     	
-    	while (true)
-    	{
-    		/*................................................................................................................................................................*/
-            if(Network.getServerConnectionStatus().equals("disconnected") && Network.getClientConnectionStatus().equals("disconnected"))
-        {
-            Network.disconnect(Network.getNetworkStatus());
-            System.out.println(" Terminating newtwork thread - Client " + Network.getClientConnectionStatus() + " Server " + Network.getServerConnectionStatus());
-            System.exit(0);
-        }
-        else {
-        	Thread.yield();       
-        	}
+    	while (true) {
+
+            /* If Client and server are disconnected terminate the code, else yield the CPU to another thread*/
+            if (getClientConnectionStatus().equals("disconnected") && getServerConnectionStatus().equals("disconnected")) {
+                System.out.println("\n Terminating network thread - Client " + getClientConnectionStatus() + " Server " + getServerConnectionStatus());
+                System.exit(0);
+            } else {
+                Thread.yield();
+            }
+
         }    
     }
 }
