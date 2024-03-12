@@ -272,10 +272,10 @@ public class Server extends Thread {
          /* Process the accounts until the client disconnects */
          while ((!Network.getClientConnectionStatus().equals("disconnected")))
          {
-        	 while ( (Network.getInBufferStatus().equals("empty") && !Network.getClientConnectionStatus().equals("disconnected")) ) 
-        	 { 
-        		 Thread.yield(); 	/* Yield the cpu if the network input buffer is empty */
-        	 }
+        //	 while ( (Network.getInBufferStatus().equals("empty") && !Network.getClientConnectionStatus().equals("disconnected")) ) 
+        //	 { 
+        //		 Thread.yield(); 	/* Yield the cpu if the network input buffer is empty */
+        //	 }
         	 
         	 if (!Network.getInBufferStatus().equals("empty"))
         	 { 
@@ -315,10 +315,10 @@ public class Server extends Thread {
 					} 
 
             	
-        		 while (Network.getOutBufferStatus().equals("full")) 
-        		 { 
-        			 Thread.yield();		/* Yield the cpu if the network output buffer is full */
-        		 }
+        	//	 while (Network.getOutBufferStatus().equals("full")) 
+        	//	 { 
+        	//		 Thread.yield();		/* Yield the cpu if the network output buffer is full */
+        	//	 }
         		
         		 /* System.out.println("\n DEBUG : Server.processTransactions() - transferring out account " + trans.getAccountNumber()); */
         		 
@@ -346,7 +346,7 @@ public class Server extends Thread {
      * @param i, amount
      */
    
-     public synchronized double deposit(int i, double amount)
+     public double deposit(int i, double amount)
      {  double curBalance;      /* Current account balance */
        
         /* Synchronize on the account object to prevent concurrent access by multiple threads */

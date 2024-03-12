@@ -25,7 +25,13 @@ public class Network extends Thread {
     private static Transactions outGoingPacket[];              /* Outgoing network buffer */
     private static String inBufferStatus, outBufferStatus;     /* Current status of the network buffers - normal, full, empty */
     private static String networkStatus;                       /* Network status - active, inactive */
-       
+    
+    private static Semaphore Mutex1 = new Semaphore(1);
+    private static Semaphore Mutex2 = new Semaphore(1);
+    private static Semaphore Empty1 = new Semaphore(10);
+    private static Semaphore Empty2 = new Semaphore(10);
+    private static Semaphore Full1 = new Semaphore(0);
+    private static Semaphore Full2 = new Semaphore(0);
     /** 
      * Constructor of the Network class
      * 
@@ -354,7 +360,19 @@ public class Network extends Thread {
      */
         public static boolean send(Transactions inPacket)
         {
-        	
+                  /* Wait if buffer if full, else enter and decrement Empty by one to bring it close to empty state
+                   * Grab mutex to block to prevent other threads (transferIn()) from enter the crtitical section
+                   * After the critical section, return mutex
+                   * Increment Full by 1 to bring it closer to full state.
+                   */
+                  try{
+                    Empty1.acquire(); // Wait until empty > 0
+                    Mutex1.acquire(); // Take lock if available
+                  }
+                  catch(Exception e){
+                    e.printStackTrace();
+                  }
+
         		  inComingPacket[inputIndexClient].setAccountNumber(inPacket.getAccountNumber());
         		  inComingPacket[inputIndexClient].setOperationType(inPacket.getOperationType());
         		  inComingPacket[inputIndexClient].setTransactionAmount(inPacket.getTransactionAmount());
@@ -377,6 +395,9 @@ public class Network extends Thread {
         		  {
         			  setInBufferStatus("normal");
         		  }
+
+                  Mutex1.release(); // Release the lock
+                  Full1.release(); // Increment buffer by 1 towards full state
             
             return true;
         }   
@@ -388,7 +409,13 @@ public class Network extends Thread {
      */
          public static boolean receive(Transactions outPacket)
         {
-
+            try{
+                Full2.acquire(); // Wait until full > 0
+                Mutex2.acquire(); // Take lock if available
+              }
+              catch(Exception e){
+                e.printStackTrace();
+              }
         		 outPacket.setAccountNumber(outGoingPacket[outputIndexClient].getAccountNumber());
         		 outPacket.setOperationType(outGoingPacket[outputIndexClient].getOperationType());
         		 outPacket.setTransactionAmount(outGoingPacket[outputIndexClient].getTransactionAmount());
@@ -411,7 +438,9 @@ public class Network extends Thread {
         		 {
         			 setOutBufferStatus("normal"); 
         		 }
-        	            
+        	 
+             Mutex2.release();
+             Empty2.release();    
              return true;
         }   
          
@@ -425,7 +454,13 @@ public class Network extends Thread {
      */
          public static boolean transferOut(Transactions outPacket)
         {
-	   	
+            try{
+                Empty2.acquire(); // Wait until empty > 0
+                Mutex2.acquire(); // Take lock if available
+              }
+              catch(Exception e){
+                e.printStackTrace();
+              }
         		outGoingPacket[inputIndexServer].setAccountNumber(outPacket.getAccountNumber());
         		outGoingPacket[inputIndexServer].setOperationType(outPacket.getOperationType());
         		outGoingPacket[inputIndexServer].setTransactionAmount(outPacket.getTransactionAmount());
@@ -448,6 +483,9 @@ public class Network extends Thread {
         		{
         			setOutBufferStatus("normal");
         		}
+
+                Mutex2.release();
+                Full2.release();
         	            
              return true;
         }   
@@ -460,7 +498,18 @@ public class Network extends Thread {
      */
        public static boolean transferIn(Transactions inPacket)
         {
-	
+                 /* Wait if the buffer is empty, else bring it closer by 1 to its full state 
+                  * Take Mutex to block two threads from accessing the same index while its being placed
+                  * Release Mutex after the critical section
+                  * Increment empty to make it closer by 1 to its empty state
+                 */
+                try{
+                    Full1.acquire(); // Wait until full > 0
+                    Mutex1.acquire(); // Take lock if available
+                  }
+                  catch(Exception e){
+                    e.printStackTrace();
+                  }
     		     inPacket.setAccountNumber(inComingPacket[outputIndexServer].getAccountNumber());
     		     inPacket.setOperationType(inComingPacket[outputIndexServer].getOperationType());
     		     inPacket.setTransactionAmount(inComingPacket[outputIndexServer].getTransactionAmount());
@@ -483,6 +532,9 @@ public class Network extends Thread {
     		     {
     		    	 setInBufferStatus("normal");
     		     }
+
+                 Mutex1.release();
+                 Empty1.release();
             
              return true;
         }   
