@@ -432,22 +432,34 @@ public class Server extends Thread {
      */
       
     public void run()
-    {   Transactions trans = new Transactions();
-    	 long serverStartTime, serverEndTime;
+    {   
+        Transactions trans = new Transactions();
+    	long serverStartTime, serverEndTime;
     
 	/* System.out.println("\n DEBUG : Server.run() - starting server thread " + getServerThreadId() + " " + Network.getServerConnectionStatus()); */
-    	
-	/*Transactions trans = new Transactions();
-    	long serverStartTime, serverEndTime;*/
+    
     
 	/* System.out.println("\n DEBUG : Server.run() - starting server thread " + objNetwork.getServerConnectionStatus()); */
     	
-    	/* .....................................................................................................................................................................................................*/
-        serverStartTime = System.currentTimeMillis();
-        this.processTransactions(trans);
-        Network.setServerConnectionStatus("disconnected");
+    	serverStartTime = System.currentTimeMillis();
+        processTransactions(trans);
         serverEndTime = System.currentTimeMillis();
-        System.out.println("\n Terminating server thread - " + " Running time " + (serverEndTime - serverStartTime) + " milliseconds");
+
+        System.out.println("\n Terminating server thread - " + serverThreadId + " Running time " + (serverEndTime - serverStartTime) + " milliseconds");
+
+        /* Terminate server thread1 and thread2 */
+        if(getServerThreadId().equals("thread1")){
+            setServerThreadRunningStatus1("terminated");
+        }
         
+        if(getServerThreadId().equals("thread2")){
+            setServerThreadRunningStatus2("terminated");
+        }
+
+        /* If both threads are terminated, disconnect the server */
+        if((getServerThreadRunningStatus1().equals("terminated")) && (getServerThreadRunningStatus2().equals("terminated"))){
+            Network.disconnect(Network.getServerIP());
+
+        }
     }
 }
