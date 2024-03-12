@@ -1,1 +1,10 @@
-Project demonstrating concurrency and synchronization of multiple threads accessing a critical region.
+# Concurrency and Synchronization Project
+
+This project demonstrates the principles of concurrency and synchronization in Java, focusing on multiple threads accessing a critical region.
+
+## Project questions and answers
+
+### Question 1: Choice between Synchronized Methods and Synchronized Statements
+
+In this project, the choice was made to utilize synchronized statements for synchronization rather than synchronized methods. Synchronized statements allow for the protection of the critical region itself, ensuring that multiple threads do not interfere with each other's access to shared resources. Using the "synchronized" keyword in method headers would synchronize the entire method, applying the lock on the instance of the class. However, this approach wouldn't effectively prevent concurrent execution of the method by different instances. Therefore, synchronized statements were applied directly on the critical region (e.g., the reference of the `Accounts` object held in the `Accounts[]` array) by binding a lock to it, ensuring proper synchronization.
+
