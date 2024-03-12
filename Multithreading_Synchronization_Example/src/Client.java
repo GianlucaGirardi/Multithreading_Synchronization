@@ -221,24 +221,23 @@ public class Client extends Thread {
     	Transactions transact = new Transactions();
     	long sendClientStartTime, sendClientEndTime, receiveClientStartTime, receiveClientEndTime;
      
-         /*................................................................................................................................................................................................................*/
-                /* Thread execution depends on the Operation attribute of the Client Object */
+        /* Thread execution depends on the Operation attribute of the Client Object */
 
-                if(this.getClientOperation().equals("sending")){
-                    sendClientStartTime = System.currentTimeMillis();
-                    this.sendTransactions();
-                    sendClientEndTime = System.currentTimeMillis();
-                    System.out.println("\n Terminating client sending thread - " + " Running time " +  (sendClientEndTime - sendClientStartTime));
-                }
-                else{
-                    receiveClientStartTime = System.currentTimeMillis();
-                    this.receiveTransactions(transact);
-                    Network.setClientConnectionStatus("disconnected");
-                    receiveClientEndTime = System.currentTimeMillis();
-                    System.out.println("\n Terminating client receiving thread - " + " Running time " +  (receiveClientEndTime - receiveClientStartTime));
-                }
-                
-            }
+        if(this.getClientOperation().equals("sending")){
+            sendClientStartTime = System.currentTimeMillis();
+            this.sendTransactions();
+            sendClientEndTime = System.currentTimeMillis();
+            System.out.println("\n Terminating client sending thread - " + " Running time " +  (sendClientEndTime - sendClientStartTime));
+        }
+        else{
+            receiveClientStartTime = System.currentTimeMillis();
+            this.receiveTransactions(transact);
+            Network.setClientConnectionStatus("disconnected");
+            receiveClientEndTime = System.currentTimeMillis();
+            System.out.println("\n Terminating client receiving thread - " + " Running time " +  (receiveClientEndTime - receiveClientStartTime));
+        }
                 
     }
+                
+}
 
